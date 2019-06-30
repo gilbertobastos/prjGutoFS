@@ -71,13 +71,13 @@ public class GutoFS {
      *
      * @return Qtd. de blocos que o sistema de arquivos possui.
      */
-    public int getQtdBlocosTotal() {return this.listaBlocos.length; }
+    private int getQtdBlocosTotal() {return this.listaBlocos.length; }
 
     /**
      *
      * @return Qtd. de blocos ocupados.
      */
-    public int getQtdBlocosOcupados() 
+    private int getQtdBlocosOcupados() 
     {
         int qtdBlocosOcupados = 0;
         
@@ -92,7 +92,7 @@ public class GutoFS {
      *
      * @return Qtd. de blocos livres.
      */
-    public int getQtdBlocosLivres() 
+    private int getQtdBlocosLivres() 
     {
         return this.listaBlocos.length - this.getQtdBlocosOcupados();
     }
@@ -112,7 +112,7 @@ public class GutoFS {
      * 
      * @return bloco Bloco.
      */
-    public Bloco obterUmBlocoLivre()
+    private Bloco obterUmBlocoLivre()
     {
         for (Bloco bloco : listaBlocos)
         {
@@ -120,6 +120,30 @@ public class GutoFS {
                 return bloco;
         }
         return null;
+    }
+    
+    /**
+     * Método que procura por um arquivo na lista de arquivos do GutoFS.
+     * 
+     * @param nomeDoArquivo Nome do arquivo no GutoFS.
+     * @return Referência para o arquivo (caso não seja localizado nenhum
+     * arquivo com tal nome, o método irá retornar NULL).
+     */
+    private Arquivo localizarArquivo(String nomeDoArquivo)
+    {
+        Arquivo arquivoGutoFS = null;
+        
+        /* Localizando o arquivo a ser removido... */
+        for (int i = 0; i < this.listaArquivos.size(); i++)
+        {
+            if (this.listaArquivos.get(i).getNomeDoArquivo().equals(nomeDoArquivo))
+            {
+                arquivoGutoFS = this.listaArquivos.get(i);
+                break;
+            }
+        }
+        
+        return arquivoGutoFS;
     }
     
     /**
@@ -163,7 +187,7 @@ public class GutoFS {
         for (;;)
         {
             /* Lendo os conteúdos do arquivo externo (apenas uma fatia) 
-            *  e inserindo os mesmos
+             * e inserindo os mesmos
              * na variável byteBuffer, onde todo seu conteúdo será
              * despejado no disco de armazenamento.
              */
@@ -194,28 +218,32 @@ public class GutoFS {
      */
     public void removerArquivo(String nomeDoArquivo) throws FileNotFoundException
     {
-        Arquivo arquivoGutoFS = null;
-        
         /* Localizando o arquivo a ser removido... */
-        for (int i = 0; i < this.listaArquivos.size(); i++)
-        {
-            if (this.listaArquivos.get(i).getNomeDoArquivo().equals(nomeDoArquivo))
-            {
-                arquivoGutoFS = this.listaArquivos.get(i);
-                this.listaArquivos.remove(i);
-                break;
-            }
-        }
+        Arquivo arquivoGutoFS = localizarArquivo(nomeDoArquivo);
        
         /* Caso o arquivo exista, prosseguindo com a remoção do mesmo
-        * liberando os blocos anteriormente alocados. 
-        */
+         * liberando os blocos anteriormente alocados. 
+         */
         if (arquivoGutoFS == null) throw new FileNotFoundException();
+        
+        listaArquivos.remove(arquivoGutoFS);
         
         for (int i = 0; i < arquivoGutoFS.getQtdBlocosAlocados(); i++)
             arquivoGutoFS.getBlocoAlocado(i).setEmUso(false);
         
         /* Atualizando o indicador de espaço disponível... */
         this.espacoDispDiscoArmazenameto += arquivoGutoFS.getTamanhoEmBytes();
+    }
+    
+    /**
+     * Método que tem o objetivo de salvar um arquivo que está no GutoFS para
+     * o sistema de arquivos do sistema operacional.
+     * 
+     * @param nomeDoArquivo Nome do arquivo no GutoFS a ser gravado externamente.
+     * @param caminhoExterno Onde o arquivo deverá ser criado (incluir o nome do arquivo!)
+     */
+    public void gravarArquivoExternamente(String nomeDoArquivo, String caminhoExterno)
+    {
+        
     }
 }
