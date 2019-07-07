@@ -213,8 +213,11 @@ public class GutoFS {
     }
 
     /**
-     *
+     * Método que remove um arquivo do GutoFS e libera os blocos anteriormente
+     * utilizados pelo mesmo para novo uso.
+     * 
      * @param nomeDoArquivo Nome do arquivo a ser removido.
+     * @throws java.io.FileNotFoundException
      */
     public void removerArquivo(String nomeDoArquivo) throws FileNotFoundException
     {
@@ -241,9 +244,37 @@ public class GutoFS {
      * 
      * @param nomeDoArquivo Nome do arquivo no GutoFS a ser gravado externamente.
      * @param caminhoExterno Onde o arquivo deverá ser criado (incluir o nome do arquivo!)
+     * @throws java.io.FileNotFoundException
      */
-    public void gravarArquivoExternamente(String nomeDoArquivo, String caminhoExterno)
+    public void gravarArquivoExternamente(String nomeDoArquivo, String caminhoExterno) throws FileNotFoundException, IOException
     {
+        /* Primeiramente procurando o arquivo na lista de arquivos do GutoFS. */
+        Arquivo arquivoGutoFS = localizarArquivo(nomeDoArquivo);
         
+        /* Vendo se existe o arquivo. */
+        if (arquivoGutoFS == null) throw new FileNotFoundException();
+        
+        /* Abrindo o disco de armazenamento para leitura e tentando gravar
+         * o arquivo externamente...
+         */
+        RandomAccessFile reader = new RandomAccessFile(this.discoArmazenamento, "rw");
+        RandomAccessFile writer = new RandomAccessFile(caminhoExterno, "rw");
+        
+        byte[] byteBuffer = new byte[this.tamanhoBlocoEmBytes];
+        int qtdBytesLidos = 0;
+        
+        /* Percorrendo todos os blocos do arquivo... */
+        for (int i = 0; i < arquivoGutoFS.getQtdBlocosAlocados(); i++)
+        {
+            /* Bloco i-ésimo do arquivo. */
+            Bloco bloco = arquivoGutoFS.getBlocoAlocado(i);
+            
+            reader.seek(bloco.deslocamentoDisco);
+            reader.read(byteBuffer);
+            writer.write(byteBuffer);
+        }
+        
+        writer.close();
+        reader.close();
     }
 }

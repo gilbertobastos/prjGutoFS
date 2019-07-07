@@ -10,8 +10,12 @@ public class Main {
 
         gutofs = new GutoFS(
                 "gutofs.harddisk",
-                1);
+                4);
 
-        gutofs.adicionarArquivo("texto1.txt");
+        gutofs.adicionarArquivo("letra-musica-1.txt");
+        gutofs.adicionarArquivo("letra-musica-2.txt");
+        
+        gutofs.gravarArquivoExternamente("letra-musica-2.txt", "suffocation-human-waiste.txt");
+        gutofs.gravarArquivoExternamente("letra-musica-1.txt", "btm-lithium-overdose.txt");
     }
 }
