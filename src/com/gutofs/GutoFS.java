@@ -261,17 +261,33 @@ public class GutoFS {
         RandomAccessFile writer = new RandomAccessFile(caminhoExterno, "rw");
         
         byte[] byteBuffer = new byte[this.tamanhoBlocoEmBytes];
-        int qtdBytesLidos = 0;
-        
+
         /* Percorrendo todos os blocos do arquivo... */
         for (int i = 0; i < arquivoGutoFS.getQtdBlocosAlocados(); i++)
         {
             /* Bloco i-ésimo do arquivo. */
             Bloco bloco = arquivoGutoFS.getBlocoAlocado(i);
-            
+           
             reader.seek(bloco.deslocamentoDisco);
             reader.read(byteBuffer);
-            writer.write(byteBuffer);
+            
+            /* Caso o bloco i-ésimo seja o último bloco do arquivo,
+             * realizando um ajuste na quantidade de bytes a serem gravados 
+             * para que não sejam salvos dados no arquivo externo que não façam 
+             * parte do arquivo que está no GutoFS (caso o arquivo salvo no GutoFS 
+             * não utilize o último bloco em sua totalidade).
+             */
+            if (i == arquivoGutoFS.getQtdBlocosAlocados() - 1)
+            {
+                writer.write(
+                        byteBuffer, 
+                        0, 
+                        (int) (this.tamanhoBlocoEmBytes - (arquivoGutoFS.getQtdBlocosAlocados() * this.tamanhoBlocoEmBytes - arquivoGutoFS.getTamanhoEmBytes())));
+            }
+            else
+            {
+                writer.write(byteBuffer);
+            }
         }
         
         writer.close();
